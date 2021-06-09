@@ -13,7 +13,7 @@ import axios from 'axios';
 
 const App = (props) => {
   const [movies, setMovies] = useState([]);
-  const [favoriteMovies, setFavoriteMovies] = useState([]);
+  const [favoriteMovies, setFavoriteMovies] = useState(['favoriteMovies']);
 
   useEffect(()=>{
     axios.get('http://localhost:5000/api/movies')
@@ -25,7 +25,17 @@ const App = (props) => {
       });
   }, []);
 
-  const deleteMovie = (id)=> {
+  const deleteMovie = (id) => {
+    axios.delete(`http://localhost:5000/api/movies/${id}`)
+      .then(res => {
+          console.log('Movie.js: deleteHandler: res: ', res)
+          setMovies(res.data)
+          // push(`/movies`)
+      })
+      .catch(err =>
+          console.error('Movie.js: deleteHandler: err: ', err)    
+      )
+    console.log('App.js: deleteMovie(): poop ', id)
   }
 
   const addToFavorites = (movie) => {
@@ -45,10 +55,11 @@ const App = (props) => {
         
           <Switch>
             <Route path="/movies/edit/:id">
+              <EditMovieForm {...props} movies={movies} setMovies={setMovies} />
             </Route>
 
             <Route path="/movies/:id">
-              <Movie/>
+              <Movie movies={movies} setMovies={setMovies} deleteMovie={deleteMovie} />
             </Route>
 
             <Route path="/movies">

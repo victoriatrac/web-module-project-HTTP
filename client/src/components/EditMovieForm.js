@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useParams, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
-import axios from 'axios';
+// import { setMovies } from '../App'
+
+import axios from 'axios'
 
 const EditMovieForm = (props) => {
-	const { push } = useHistory();
+	const { push } = useHistory()
+	const { id } = useParams()
 
 	const [movie, setMovie] = useState({
 		title:"",
@@ -13,20 +16,48 @@ const EditMovieForm = (props) => {
 		genre: "",
 		metascore: 0,
 		description: ""
-	});
+	})
+
+	useEffect(() => {
+		axios.get(`http://localhost:5000/api/movies/${id}`)
+			.then(res => {
+				console.log('EditMovieForm.js: EditMovieForm.js: useEffect: res: ', res)
+				setMovie(res.data)
+			})
+			.catch(err =>
+				console.error(`unable to retrieve movie by ID: ${id}`, err)
+			)
+	}, [])
 	
 	const handleChange = (e) => {
         setMovie({
             ...movie,
             [e.target.name]: e.target.value
-        });
+        })
     }
 
     const handleSubmit = (e) => {
-		e.preventDefault();
+		e.preventDefault()
+		axios.put(`http://localhost:5000/api/movies/${id}`, movie)
+			.then(res => {
+				console.log('EditMovieForm.js: movies/put: res: ', res)
+				const changedMovie = res.data.find(movie => {
+					return movie.id === parseInt(id, 10)
+				})
+				props.setMovies(props.movies.map(movie => {
+					if (movie.id === changedMovie.id) {
+						return changedMovie
+					}
+					return movie
+				}))
+				push(`/movies/${id}`)
+			})
+			.catch(err =>
+				console.error(`unable to find item by id ${id}: `, err)	
+			)
 	}
 	
-	const { title, director, genre, metascore, description } = movie;
+	const { title, director, genre, metascore, description } = movie
 
     return (
 	<div className="col">
@@ -64,7 +95,7 @@ const EditMovieForm = (props) => {
 				</div>
 			</form>
 		</div>
-	</div>);
+	</div>)
 }
 
-export default EditMovieForm;
+export default EditMovieForm
